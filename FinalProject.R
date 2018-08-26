@@ -1,5 +1,14 @@
-## rbootcamp final ##
-## Duncan Mahood   ##
+
+##################################
+##                              ##
+## RBootcamp Final Assignment   ##
+##                              ##
+## Emory University - Fall 2018 ##
+## Duncan Mahood                ##
+##                              ##
+## August 27th, 2018            ##
+##                              ##
+##################################
 
 ## Set the working directory to the folder where the datasets are saved ##
 getwd()
@@ -7,8 +16,8 @@ setwd("/Users/duncanmahood/OneDrive - Emory University/_Fall 2018/R Bootcamp/NSF
 dir()
 
 ## install rio package for data import and export functions  ##
-install.packages("rio")
-install_formats()
+#install.packages("rio")
+#install_formats()
 library(rio)
 
 ## import data ##
@@ -70,10 +79,6 @@ summary(religion) # religion has 9s in variable: ATTND14
   mf <- rbind(female, male)  
   summary(mf)  
   
-  ###head(mf)
-  ###dups <- !duplicated(mf$Caseid)
-  ###dups
-  
 ## Merge mf and religion
   
   mfr <- merge(mf, religion, by.x="CASEID", by.y="CASEID")
@@ -93,20 +98,20 @@ summary(religion) # religion has 9s in variable: ATTND14
   summary(mfr$SECOMP)
 
 ## Create a Table 1 with descriptive statistics for age, age at first sex, gender, 
-##  race, religiosity, used contraception at first sex and comprehensive sex ed
+##  race, religiosity, used contraception at first sex and comprehensive sex education
   
-#  AGE        Mean, SD, Missing
+#  AGE
   age <- data.frame(Variable = as.character("Age"), Mean = as.numeric(mean(mfr$AGE_R)), SD = as.numeric(sd(mfr$AGE_R)), Missing = as.integer(summary(mfr$AGE_R)[7]))
   age
   
-#  AGE_SEX1   Mean, SD, Missing
+#  AGE_SEX1
   age_sex1 <- data.frame(Variable = as.character("Age at First Sex"), Mean = as.numeric(summary(mfr$Age_sex1)[4]), SD = as.numeric(sd(mfr[!is.na(mfr$Age_sex1), 9])), Missing = as.integer(summary(mfr$Age_sex1)[7]))
   age_sex1
   
-#  GENDER     Categories, Missing
+#  GENDER
   prop.table(table(mfr$GENDER, useNA = 'always'))
   
-#  RACE       Categories, Missing
+#  RACE
   prop.table(table(mfr$RACE, useNA = 'always'))
 
 #  RELIGIOSITY
@@ -124,12 +129,41 @@ summary(religion) # religion has 9s in variable: ATTND14
 ##  Conduct an analysis to determine the association between        ##
 ##  comprehensive sex education and age at first sexual encounter   ##
 
-    boxplot(mfr$Age_sex1~mfr$SECOMP)
-      
+  
+  # Create a boxplot
+  
+  jpeg("Boxplot.jpg", width = 450, height = 500) # Open jpeg file
+  
+    boxplot(mfr$Age_sex1~mfr$SECOMP, # Y = Age and X = Dichotomous Sex Education variable
+            main = "Age at First Sexual Encounter stratified by Sex Education", 
+            xlab = "Sex Education", 
+            ylab = "Age at First Sexual Encounter (Years)",
+            names = c("Not Comprehensive", "Comprehensive"),
+            col=(c("gold","darkgreen")),
+            pch=4,     # Creates 'x' for the outliers
+            cex=0.5)   # Reduces the size of the 'x' outliers
+    
+    dev.off() # Closes the jpeg file
+    
+  # Run a statistical test
+   
     mytest <- lm(mfr$Age_sex1~mfr$SECOMP)
     summary(mytest)
-    anova(mytest) 
-    #pvalue: .20 not significantly different 
+    anova(mytest)     
     
+    # pvalue: .20 indicating that the Age at first sex does not change 
+    # significantly between groups with different levels (dichotomous) of sex education
 
     
+## Control for some additional variables: GENDER, AGE, RELIGIOSITY, RACE  ##
+    
+    ## Run and save the multivariate linear model
+    model2 <- summary(lm(mfr$Age_sex1~mfr$SECOMP + mfr$GENDER + mfr$AGE_R + mfr$RELIGIOUS + mfr$RACE))
+    
+    ## Export the coefficients results from the summary table
+    table2 <- model2$coefficients
+    
+    ## Save the table as a CSV that can be easily copied into MS Word
+    write.csv(table2, file = 'table2.csv', col.names = TRUE, row.names = TRUE)
+    
+## Assignment Complete! ##
